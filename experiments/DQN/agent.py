@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from network import DeepQNetwork
+from network import create_model
 from replay_buffer import ReplayBuffer
 
 
@@ -26,8 +26,8 @@ class Agent:
 
         self.memory = ReplayBuffer(mem_size, input_dims, n_actions)
 
-        self.q_eval = DeepQNetwork(input_dims, n_actions, lr)
-        self.q_next = DeepQNetwork(input_dims, n_actions, lr)
+        self.q_eval = create_model(input_dims, n_actions, lr)
+        self.q_next = create_model(input_dims, n_actions, lr)
 
     def save_models(self):
         self.q_eval.save(self.fname+'q_eval')

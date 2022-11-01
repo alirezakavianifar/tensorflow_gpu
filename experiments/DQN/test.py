@@ -1,58 +1,76 @@
-import sys
-sys.path.append(r'D:\projects\tensorflow_gpu\experiments')
-from network import DeepQNetwork
-from utils import load_data, packetloss_threshold, energyconsumption_threshold
-import pandas as pd
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from sklearn import metrics, preprocessing
 import numpy as np
+import pandas as pd
+from utils import load_data, packetloss_threshold, energyconsumption_threshold
+from network import create_model
+from sklearn.model_selection import train_test_split, GridSearchCV
+import sys
+from unicodedata import name
+sys.path.append(r'D:\projects\tensorflow_gpu\experiments')
+
 
 path = r'D:\projects\papers\Deep Learning for Effective and Efficient  Reduction of Large Adaptation Spaces in Self-Adaptive Systems\experiment_results\simulation_results\DeltaIoTv1'
 
-data = load_data(path=path, load_all=True)
+data = load_data(load_all=True)
 
-# X = data.iloc[:,:1]
-# columns = data.columns
-max_val_en = data['energyconsumption'].max()
-min_val_en = data['energyconsumption'].min()
-max_val_pl = data['packetloss'].max()
-min_val_pl = data['packetloss'].min()
-
-data['energyconsumptionThreshold'] = data['energyconsumption'].apply(lambda x: energyconsumption_threshold(x))
-data['packetlossThreshold'] = data['packetloss'].apply(lambda x: packetloss_threshold(x))
+X = data[0]
+X = np.array(X)
+y_packet = data[1][0]
+y_latency = data[1][1]
+y_packet = np.array(y_packet)
+y_latency = np.array(y_latency)
 
 
-data['features'] = data['features'].values.tolist()
-
-sampled_data = data.sample(n=5000)
-
-filtered_data = sampled_data.loc[(sampled_data['energyconsumptionThreshold']==1) & (sampled_data['packetlossThreshold']==1)]
-
-# data = data.iloc[:1000,:]
-
-X = sampled_data['features']
-X = pd.DataFrame(X)
-tt=X.iloc[:1,:]
-
-X = X.values.tolist()
-
-r = np.array(X[0])
-
-lst = []
-for ls in X:
-    item = pd.DataFrame(ls).T
-    lst.append(item)
-    
-final_X = pd.concat(lst)
-final_y = sampled_data['energyconsumptionThreshold']
-
-model = DeepQNetwork(len(final_X.columns), 2, 1e-3)
-
-model.fit(final_X, final_y)
-
-    
+def discretize_y(y):
+    if y < 10:
+        return 1
+    else:
+        return 0
 
 
+discrete = np.vectorize(discretize_y)
+
+y_packet = discrete(y_packet)
+y_latency = discrete(y_latency)
+
+
+X_train, X_test, y_train_p, y_test_p, y_train_l, y_test_l = train_test_split(
+    X, y_packet, y_latency, test_size=0.30, random_state=42)
+
+
+input_size = X.shape[1]
+# input_size = image_size * image_size
+
+
+inputs = tf.keras.Input(shape=(input_size,))
+x = tf.keras.layers.Dense(128, activation=tf.nn.relu)(inputs)
+output1 = tf.keras.layers.Dense(1, activation='sigmoid', name='packetloss')(x)
+output2 = tf.keras.layers.Dense(1, activation='sigmoid', name='latency')(x)
+
+
+model = tf.keras.Model(inputs=inputs, outputs=[output1, output2])
+loss1 = tf.keras.losses.BinaryCrossentropy()
+loss2 = tf.keras.losses.BinaryCrossentropy()
+optim = tf.keras.optimizers.Adam()
+
+losses = {'packetloss': loss1, 'latency': loss2}
+y = {'packetloss': y_train_p, 'latency': y_train_l}
+y_test = {'packetloss': y_test_p, 'latency': y_test_l}
+
+model.summary()
+model.compile(optimizer=optim, loss=losses, metrics=['accuracy'])
+
+
+batch_size = [32, 64, 128, 256]
+epochs = [10, 20, 30, 40, 50]
+param_grid = dict(batch_size=batch_size, epochs=epochs)
+grid = GridSearchCV(estimator=model, param_grid=param_grid, scoring='accuracy', n_jobs=-1, cv=3)
+grid_result = grid.fit(X_train, y=y_train_p)
 
 
 
+model.fit(X_train, y=y, epochs=15, batch_size=64, verbose=True)
 
-
+model.evaluate(X_test, y=y_test)

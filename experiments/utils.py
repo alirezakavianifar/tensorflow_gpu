@@ -5,8 +5,9 @@ import pandas as pd
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 
-PATH = r'D:\projects\papers\Lifelong Self-Adaptation Self-Adaptation Meets Lifelong Machine Learning\generated_data_by_deltaiot_simulation\no_drift_scanerio'
+PATH = r'D:\projects\papers\Deep Learning for Effective and Efficient  Reduction of Large Adaptation Spaces in Self-Adaptive Systems\DLASeR_plus_online_material\dlaser_plus\raw'
 
 
 def plotRunningAverage(totalrewards, color, info=None):
@@ -28,21 +29,42 @@ def plotRunningAverage(totalrewards, color, info=None):
 
 
 def load_data(path=PATH, load_all=False):
+    features = []
+    packetLoss = []
+    latency = []
+    energyConsumption = []
+    version = 'DeltaIoTv1'
 
-    json_files = glob.glob(os.path.join(path, "*.json"))
+    for i in range(300):
+        with open(os.path.join(PATH, version,  f'dataset_with_all_features{i + 1}.json')) as f:
+            data = json.load(f)
 
-    json_lst = []
+            features.extend(data['features'])
+            packetLoss.extend(data['packetloss'])
+            latency.extend(data['latency'])
+            energyConsumption.extend(data['energyconsumption'])
 
-    for f in json_files:
-        df = pd.read_json(f)
-        json_lst.append(df)
+            del data
+    print("data is loaded successfuly")
+    return features, (packetLoss, latency, energyConsumption)
 
-    if load_all:
-        # Merge all dataframes into one
-        final_df = pd.concat(json_lst)
-        return final_df
 
-    return json_lst
+# def load_data(path=PATH, load_all=False):
+
+#     json_files = glob.glob(os.path.join(path, "*.json"))
+
+#     json_lst = []
+
+#     for f in json_files:
+#         df = pd.read_json(f)
+#         json_lst.append(df)
+
+#     if load_all:
+#         # Merge all dataframes into one
+#         final_df = pd.concat(json_lst)
+#         return final_df
+
+#     return json_lst
 
 
 def choose_randomly(lst):

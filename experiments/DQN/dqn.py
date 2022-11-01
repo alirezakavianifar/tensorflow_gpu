@@ -18,7 +18,7 @@ if __name__ == '__main__':
                   n_actions=env.action_space.n, mem_size=50000, eps_min=0.1,
                   batch_size=32, replace=1000, eps_dec=1e-5,
                   chkpt_dir='models/', algo='DQNAgent',
-                  env_name='PongNoFrameskip-v4')
+                  env_name='DelatIotv1')
     if load_checkpoint:
         agent.load_models()
         agent.epsilon = agent.eps_min
