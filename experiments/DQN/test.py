@@ -1,3 +1,5 @@
+import sys
+sys.path.append(r'D:\projects\tensorflow_gpu\experiments')
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from sklearn import metrics, preprocessing
@@ -6,9 +8,7 @@ import pandas as pd
 from utils import load_data, packetloss_threshold, energyconsumption_threshold
 from network import create_model
 from sklearn.model_selection import train_test_split, GridSearchCV
-import sys
-from unicodedata import name
-sys.path.append(r'D:\projects\tensorflow_gpu\experiments')
+import seaborn as sns
 
 
 path = r'D:\projects\papers\Deep Learning for Effective and Efficient  Reduction of Large Adaptation Spaces in Self-Adaptive Systems\experiment_results\simulation_results\DeltaIoTv1'
@@ -23,8 +23,9 @@ y_packet = np.array(y_packet)
 y_latency = np.array(y_latency)
 
 
-def discretize_y(y):
-    if y < 10:
+
+def discretize_y(y, threshold):
+    if y < threshold:
         return 1
     else:
         return 0
@@ -32,8 +33,11 @@ def discretize_y(y):
 
 discrete = np.vectorize(discretize_y)
 
-y_packet = discrete(y_packet)
-y_latency = discrete(y_latency)
+
+y_packet = discrete(y_packet,9.6)
+y_latency = discrete(y_latency,0.5)
+
+sns.displot(y_packet, kind="kde")
 
 
 X_train, X_test, y_train_p, y_test_p, y_train_l, y_test_l = train_test_split(
@@ -71,6 +75,5 @@ grid_result = grid.fit(X_train, y=y_train_p)
 
 
 
-model.fit(X_train, y=y, epochs=15, batch_size=64, verbose=True)
-
+ 
 model.evaluate(X_test, y=y_test)
