@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 
-PATH = r'D:\projects\papers\Deep Learning for Effective and Efficient  Reduction of Large Adaptation Spaces in Self-Adaptive Systems\DLASeR_plus_online_material\dlaser_plus\raw'
+PATH = r'D:\projects\papers\Deep Learning for Effective and Efficient  Reduction of Large Adaptation Spaces in Self-Adaptive Systems\DLASeR_plus_online_material\dlaser_plus\raw\DeltaIoTv1'
 
 
 def plotRunningAverage(totalrewards, color, info=None):
@@ -49,22 +49,22 @@ def load_data(path=PATH, load_all=False):
     return features, (packetLoss, latency, energyConsumption)
 
 
-# def load_data(path=PATH, load_all=False):
+def load_dataV1(path=PATH, load_all=False):
 
-#     json_files = glob.glob(os.path.join(path, "*.json"))
+    json_files = glob.glob(os.path.join(path, "*.json"))
 
-#     json_lst = []
+    json_lst = []
 
-#     for f in json_files:
-#         df = pd.read_json(f)
-#         json_lst.append(df)
+    for f in json_files:
+        df = pd.read_json(f)
+        json_lst.append(df)
 
-#     if load_all:
-#         # Merge all dataframes into one
-#         final_df = pd.concat(json_lst)
-#         return final_df
+    if load_all:
+        # Merge all dataframes into one
+        final_df = pd.concat(json_lst)
+        return final_df
 
-#     return json_lst
+    return json_lst
 
 
 def choose_randomly(lst):

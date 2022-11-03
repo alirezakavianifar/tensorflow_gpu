@@ -5,7 +5,7 @@ import math
 import sys
 # sys.path.append(r'D:\projects\tensorflow_gpu\experiments')
 sys.path.append(r'D:\projects\tensorflow_gpu\experiments')
-from utils import utility, load_data
+from utils import utility, load_data, load_dataV1
 
 N_STATES = 216
 N_ACTIONS = 216
@@ -24,7 +24,7 @@ class DeltaIotEnv(gym.Env):
         # Example for using image as input:
         self.observation_space = spaces.Discrete(N_STATES)
         # Load the data
-        self.data = load_data()
+        self.data = load_dataV1()
         self.ut = math.inf
         self.done = False
         self.time_steps = N_ACTIONS
@@ -55,7 +55,8 @@ class DeltaIotEnv(gym.Env):
     def reset(self):
         # Reset the state of the environment to an initial state
         self.obs = np.random.randint(N_STATES)
-        self.df = self.data[self.obs]
+        rand = np.random.randint(len(self.data))
+        self.df = self.data[rand]
         self.ut = math.inf
         self.done = False
         self.time_steps = N_ACTIONS
